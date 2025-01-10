@@ -3,14 +3,26 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "pnpm run services:up && pnpm run wait-for-postgres && pnpm run db:push && next dev --turbopack",
     "build": "next build",
     "start": "next start",
+    "wait-for-postgres": "node infra/scripts/wait-for-postgres.js",
     "lint:prettier:check": "prettier --check .",
     "lint:prettier:fix": "prettier --write .",
-    "lint:eslint:check": "next lint --dir ."
+    "lint:eslint:check": "next lint --dir .",
+    "services:up": "docker compose -f infra/compose.yaml up -d",
+    "services:stop": "docker compose -f infra/compose.yaml stop",
+    "services:down": "docker compose -f infra/compose.yaml down",
+    "migrate:dev": "npx dotenv -e .env.development -- prisma migrate dev",
+    "db:push": "npx dotenv -e .env.development -- prisma db push",
+    "migrate:reset": "npx dotenv -e .env.development -- prisma migrate reset",
+    "db:seed": "npx dotenv -e .env.development -- prisma db seed",
+    "prisma:generate": "npx dotenv -e .env.development -- prisma generate",
+    "prisma:studio": "npx dotenv -e .env.development -- prisma studio",
+    "production:build": "npx prisma generate && npx prisma migrate deploy && next build"
   },
   "dependencies": {
+    "@prisma/client": "6.2.1",
     "next": "15.1.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -19,13 +31,18 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv-cli": "^7.3.0",
     "eslint": "8.57.0",
     "eslint-config-next": "14.2.4",
     "eslint-config-prettier": "^9.1.0",
     "postcss": "^8",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.9",
+    "prisma": "^6.2.1",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
+  },
+  "prisma": {
+    "schema": "infra/schema.prisma"
   }
 }
